@@ -1,5 +1,5 @@
 body {
-    font-family: palatino, georgia, verdana, arial, sans-serif;
+    font-family: palatino, palatino linotype, georgia, serif;
     font-size: 10pt;
     text-align: center;
 }
@@ -59,8 +59,7 @@ body {
 }
 
 .code {
-    font-family: monaco, andale mono, lucidatypewriter, courier,
-                 courier new, monospace;
+    font-family: monaco, consolas, andale mono, lucidatypewriter, monospace;
     float: left;
     white-space: pre;
     font-size: 6pt;
