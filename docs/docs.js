@@ -35,8 +35,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+// = App =
+//
+// This is the application that processes the code and lets the user
+// navigate through and read the documentation.
+
 var App = {
 };
+
+// ** {{{ App.trim() }}} **
+//
+// Returns {{{str}}} without whitespace at the beginning and the end.
 
 App.trim = function trim(str) {
   return str.replace(/^\s+|\s+$/g,"");
@@ -51,6 +60,17 @@ App.trim = function trim(str) {
 App.processors = [];
 
 App.menuItems = {};   // Has a {label, urlOrCallback} dict for each keyword.
+
+// ** {{{ App.processCode() }}} **
+//
+// Splits {{{code}}} in documented blocks and puts them in {{{div}}}.
+// The used structure for each block is:
+// {{{
+// <div class="documentation"> (...) </div>
+// <div class="code"> (...) </div>
+// <div class="divider"/>
+// }}}
+// Documentation is parsed using [[http://wikicreole.org/|Creole]].
 
 App.processCode = function processCode(code, div) {
   var lines = code.split('\n');
@@ -128,7 +148,7 @@ App.processCode = function processCode(code, div) {
     });
 };
 
-// ** {{{ App.addMenuItem }}} **
+// ** {{{ App.addMenuItem() }}} **
 //
 // Adds a menu item to the {{{element}}} DOM node showing the {{{label}}}
 // text.  If {{{urlOrCallback}}} is an URL, choosing the item causes a new
@@ -192,6 +212,12 @@ App.addMenuItem = function addMenuItem(element, label, urlOrCallback) {
 App.currentPage = null;
 
 App.pages = {};
+
+// ** {{{ App.navigate() }}} **
+//
+// Navigates to a different view if needed.  The appropriate view is
+// fetched from the URL hash.  If that is empty, the original page content
+// is shown.
 
 App.navigate = function navigate() {
   var newPage;
