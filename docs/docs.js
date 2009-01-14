@@ -73,7 +73,7 @@ App.menuItems = {};   // Has a {label, urlOrCallback} dict for each keyword.
 // Documentation is parsed using [[http://wikicreole.org/|Creole]].
 
 App.processCode = function processCode(code, div) {
-  var lines = code.split('\n');
+  var lines = code.replace(/\r/g, '').split('\n');
   var blocks = [];
   var blockText = "";
   var codeText = "";
