@@ -101,7 +101,7 @@ App.processCode = function processCode(code, div) {
           blockText += text + "\n";
           lastCommentLine += 1;
           isCode = false;
-        } else if (text[0] == "=" || text[0] == "*") {
+        } else if (text.charAt(0) == "=" || text.charAt(0) == "*") {
           maybeAppendBlock();
           firstCommentLine = lineNum;
           lastCommentLine = lineNum;
