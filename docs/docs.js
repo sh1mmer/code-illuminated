@@ -96,7 +96,7 @@ App.processCode = function processCode(code, div) {
       var isComment = (App.trim(line).indexOf("//") == 0);
       if (isComment) {
         var startIndex = line.indexOf("//");
-        var text = line.slice(startIndex + 3);
+        var text = App.trim(line.slice(startIndex + 3));
         if (lineNum == lastCommentLine + 1) {
           blockText += text + "\n";
           lastCommentLine += 1;
