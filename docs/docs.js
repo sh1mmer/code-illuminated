@@ -111,7 +111,7 @@ App.processCode = function processCode(code, div) {
         }
       }
       if (isCode)
-        codeText += line + "\n";
+        codeText += line + "\r\n";
     });
   maybeAppendBlock();
 

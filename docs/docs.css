@@ -48,6 +48,11 @@ body {
     line-height: 1.4em;
 }
 
+.documentation pre {
+    white-space: pre;
+    word-wrap: break-word; 
+}
+
 .code {
     font-family: monaco, consolas, andale mono, lucidatypewriter, monospace;
     float: left;
