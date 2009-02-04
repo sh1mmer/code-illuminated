@@ -1,5 +1,8 @@
 /*
- * Copyright (c) 2008 Ivan Fomichev
+ * JavaScript Creole 1.0 Wiki Markup Parser
+ * $Id: creole.js 12 2009-02-03 22:06:41Z ifomichev $
+ *
+ * Copyright (c) 2009 Ivan Fomichev
  *
  * Portions Copyright (c) 2007 Chris Purcell
  *
@@ -25,16 +28,17 @@
 if (!Parse) { var Parse = {}; }
 if (!Parse.Simple) { Parse.Simple = {}; }
 
-Parse.Simple.Base = function(root, options) {
+Parse.Simple.Base = function(grammar, options) {
     if (!arguments.length) { return; }
 
-    this.root = new this.ruleConstructor(root);
+    this.grammar = grammar;
+    this.grammar.root = new this.ruleConstructor(this.grammar.root);
     this.options = options;
 };
 
 Parse.Simple.Base.prototype = {
     ruleConstructor: null,
-    root: null,
+    grammar: null,
     options: null,
 
     parse: function(node, data, options) {
@@ -46,7 +50,9 @@ Parse.Simple.Base.prototype = {
         else {
             options = this.options;
         }
-        this.root.apply(node, data, options);
+        if (options.forIE) { data = data.replace(/\r/g, ''); }
+        this.grammar.root.apply(node, data, options);
+        if (options.forIE) { node.innerHTML = node.innerHTML.replace(/\n/g, '\r\n'); }
     }
 };
 
@@ -97,7 +103,7 @@ Parse.Simple.Base.Rule.prototype = {
         if (this.attrs) {
             for (var i in this.attrs) {
                 target.setAttribute(i, this.attrs[i]);
-                if (i == 'class') { target.className = this.attrs[i]; } // for IE
+                if (options.forIE && i == 'class') { target.className = this.attrs[i]; }
             }
         }
         return this;
@@ -127,12 +133,12 @@ Parse.Simple.Base.Rule.prototype = {
                     if (best.index == 0) { break; }
                 }
             }
-
+                
             var pos = best ? best.index : tail.length;
             if (pos > 0) {
                 this.fallback.apply(node, tail.substring(0, pos), options);
             }
-
+            
             if (!best) { break; }
 
             if (!rule.build) { rule = new this.constructor(rule); }
@@ -159,7 +165,7 @@ Parse.Simple.Base.Rule.prototype = {
         apply: function(node, data, options) {
             node.appendChild(document.createTextNode(data));
         }
-    }
+    }    
 };
 
 Parse.Simple.Base.Rule.prototype.constructor = Parse.Simple.Base.Rule;
@@ -175,6 +181,10 @@ Parse.Simple.Creole = function(options) {
     rx.interwikiLink = rx.interwikiPrefix + rx.link;
 
     var formatLink = function(link, format) {
+        if (format instanceof Function) {
+            return format(link);
+        }
+
         format = format instanceof Array ? format : [ format ];
         if (typeof format[1] == 'undefined') { format[1] = ''; }
         return format[0] + link + format[1];
@@ -184,7 +194,7 @@ Parse.Simple.Creole = function(options) {
         hr: { tag: 'hr', regex: /(^|\n)\s*----\s*(\n|$)/ },
 
         br: { tag: 'br', regex: /\\\\/ },
-
+        
         preBlock: { tag: 'pre', capture: 2,
             regex: /(^|\n)\{\{\{\n((.*\n)*?)\}\}\}(\n|$)/,
             replaceRegex: /^ ([ \t]*\}\}\})/gm,
@@ -245,12 +255,12 @@ Parse.Simple.Creole = function(options) {
         namedLink: { regex: '\\[\\[(' + rx.link + ')\\|(' + rx.linkText + ')\\]\\]',
             build: function(node, r, options) {
                 var link = document.createElement('a');
-
+                
                 link.href = options && options.linkFormat
                     ? formatLink(r[1].replace(/~(.)/g, '$1'), options.linkFormat)
                     : r[1].replace(/~(.)/g, '$1');
                 this.apply(link, r[2], options);
-
+                
                 node.appendChild(link);
             } },
 
@@ -280,13 +290,13 @@ Parse.Simple.Creole = function(options) {
     g.namedInterwikiLink = { regex: '\\[\\[(' + rx.interwikiLink + ')\\|(' + rx.linkText + ')\\]\\]',
         build: function(node, r, options) {
                 var link = document.createElement('a');
-
+                
                 var m, f;
                 if (options && options.interwiki) {
                 m = r[1].match(/(.*?):(.*)/);
                 f = options.interwiki[m[1]];
             }
-
+            
             if (typeof f == 'undefined') {
                 if (!g.namedLink.apply) {
                     g.namedLink = new this.constructor(g.namedLink);
@@ -295,9 +305,9 @@ Parse.Simple.Creole = function(options) {
             }
 
             link.href = formatLink(m[2].replace(/~(.)/g, '$1'), f);
-
+            
             this.apply(link, r[2], options);
-
+            
             node.appendChild(link);
         }
     };
@@ -340,7 +350,7 @@ Parse.Simple.Creole = function(options) {
         fallback: { children: [ g.paragraph ] }
     };
 
-    Parse.Simple.Base.call(this, g.root, options);
+    Parse.Simple.Base.call(this, g, options);
 };
 
 Parse.Simple.Creole.prototype = new Parse.Simple.Base();

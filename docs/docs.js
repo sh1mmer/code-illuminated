@@ -116,11 +116,13 @@ App.processCode = function processCode(code, div) {
   maybeAppendBlock();
 
   var creole = new Parse.Simple.Creole(
-    {interwiki: {
-       WikiCreole: 'http://www.wikicreole.org/wiki/',
-       Wikipedia: 'http://en.wikipedia.org/wiki/'
-     },
-     linkFormat: ''
+    {
+      forIE: document.all,
+      interwiki: {
+        WikiCreole: 'http://www.wikicreole.org/wiki/',
+        Wikipedia: 'http://en.wikipedia.org/wiki/'
+      },
+      linkFormat: ''
     });
 
   jQuery.each(
