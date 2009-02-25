@@ -49,7 +49,7 @@ body {
 }
 
 .code {
-    font-family: monaco, consolas, andale mono, lucidatypewriter, monospace;
+    font-family: monaco, consolas, andale mono, monospace;
     float: left;
     white-space: pre;
     font-size: 6pt;
