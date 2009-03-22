@@ -1,6 +1,6 @@
 /*
  * JavaScript Creole 1.0 Wiki Markup Parser
- * $Id: creole.js 12 2009-02-03 22:06:41Z ifomichev $
+ * $Id: creole.js 14 2009-03-21 16:15:08Z ifomichev $
  *
  * Copyright (c) 2009 Ivan Fomichev
  *
@@ -50,9 +50,9 @@ Parse.Simple.Base.prototype = {
         else {
             options = this.options;
         }
-        if (options.forIE) { data = data.replace(/\r/g, ''); }
+        data = data.replace(/\r\n?/g, '\n');
         this.grammar.root.apply(node, data, options);
-        if (options.forIE) { node.innerHTML = node.innerHTML.replace(/\n/g, '\r\n'); }
+        if (options && options.forIE) { node.innerHTML = node.innerHTML.replace(/\r?\n/g, '\r\n'); }
     }
 };
 
@@ -103,7 +103,7 @@ Parse.Simple.Base.Rule.prototype = {
         if (this.attrs) {
             for (var i in this.attrs) {
                 target.setAttribute(i, this.attrs[i]);
-                if (options.forIE && i == 'class') { target.className = this.attrs[i]; }
+                if (options && options.forIE && i == 'class') { target.className = this.attrs[i]; }
             }
         }
         return this;
@@ -163,6 +163,10 @@ Parse.Simple.Base.Rule.prototype = {
 
     fallback: {
         apply: function(node, data, options) {
+            if (options && options.forIE) {
+                // workaround for bad IE
+                data = data.replace(/\n/g, ' \r');
+            }
             node.appendChild(document.createTextNode(data));
         }
     }    
@@ -179,6 +183,11 @@ Parse.Simple.Creole = function(options) {
     rx.rawUri = rx.uriPrefix + '\\S*[^\\s!"\',.:;?]';
     rx.interwikiPrefix = '[\\w.]+:';
     rx.interwikiLink = rx.interwikiPrefix + rx.link;
+    rx.img = '\\{\\{((?!\\{)[^|}\\n]*(?:}(?!})[^|}\\n]*)*)' +
+             (options && options.strict ? '' : '(?:') + 
+             '\\|([^}~\\n]*((}(?!})|~.)[^}~\\n]*)*)' +
+             (options && options.strict ? '' : ')?') +
+             '}}';
 
     var formatLink = function(link, format) {
         if (format instanceof Function) {
@@ -216,7 +225,10 @@ Parse.Simple.Creole = function(options) {
         tr: { tag: 'tr', capture: 2, regex: /(^|\n)(\|.*?)\|?[ \t]*(\n|$)/ },
         th: { tag: 'th', regex: /\|+=([^|]*)/, capture: 1 },
         td: { tag: 'td', capture: 1,
-            regex: /\|+([^|~]*(~(.|(?=\n)|$)[^|~]*)*)/ },
+            regex: '\\|+([^|~\\[{]*((~(.|(?=\\n)|$)|' +
+                   '\\[\\[' + rx.link + '(\\|' + rx.linkText + ')?\\]\\]' +
+                   (options && options.strict ? '' : '|' + rx.img) +
+                   '|[\\[{])[^|~]*)*)' },
 
         singleLine: { regex: /.+/, capture: 0 },
         paragraph: { tag: 'p', capture: 0,
@@ -230,12 +242,13 @@ Parse.Simple.Creole = function(options) {
                    '((' + rx.rawUri + '|\\/(?!\\/)|~(.|(?=\\n)|$))' +
                    '((?!' + rx.uriPrefix + ')[^\\/~])*)*)(\\/\\/|\\n|$)' },
 
-        img: { regex: '\\{\\{((?!\\{)[^|}\\n]*(?:}(?!})[^|}\\n]*)*)\\|' +
-                      '([^}~\\n]*((}(?!})|~.)[^}~\\n]*)*)}}',
+        img: { regex: rx.img,
             build: function(node, r, options) {
                 var img = document.createElement('img');
                 img.src = r[1];
-                img.alt = r[2].replace(/~(.)/g, '$1');
+                img.alt = r[2] === undefined
+                    ? (options && options.defaultImageText ? options.defaultImageText : '')
+                    : r[2].replace(/~(.)/g, '$1');
                 node.appendChild(img);
             } },
 
