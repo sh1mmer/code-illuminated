@@ -1,0 +1,1 @@
+// = test_with_cr.js = // ** {{{ Test with CR }}} **//// Edit the file preserving the end line terminator: CR.// [[#test_with_crlf.js| see crlf]]// [[#test_with_lf.js| see lf]]//// The used structure for each block is:// {{{// <div class="documentation"> (...) </div>// <div class="code"> (...) </div>// <div class="divider"/>// }}}function dummy() {}
